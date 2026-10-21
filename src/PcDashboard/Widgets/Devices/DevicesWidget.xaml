@@ -1,0 +1,98 @@
+<UserControl x:Class="PcDashboard.Widgets.Devices.DevicesWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:PcDashboard.Controls">
+    <!-- Taslak: flex column; gap 16px -->
+    <DockPanel>
+        <ui:TrackedText DockPanel.Dock="Top" Style="{StaticResource WidgetLabel}" Text="Cihazlar"
+                        HorizontalAlignment="Left" Margin="0,0,0,16"/>
+
+        <ItemsControl ItemsSource="{Binding Slots}" Focusable="False">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <!-- Satır: ikon kutusu 44px (radius 12) + gap 14px + iki satır (gap 6px) -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- İkon: hızlı işlem (mikrofon/çıkış: sessize al, kulaklık: varsayılan yap) -->
+                        <Button Style="{StaticResource PlainButton}" VerticalAlignment="Center"
+                                ToolTip="{Binding QuickActionTooltip}"
+                                Command="{Binding DataContext.QuickActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}">
+                            <Border Width="44" Height="44" CornerRadius="12" Background="{StaticResource ButtonBrush}">
+                                <ui:Icon Data="{Binding Icon}" Width="22" Height="22" StrokeThickness="1.7"
+                                         Foreground="{StaticResource StrongBrush}"/>
+                            </Border>
+                        </Button>
+
+                        <!-- Ad + ok: tıklayınca aygıt seçimi açılır -->
+                        <Button Grid.Column="1" Style="{StaticResource PlainButton}" Margin="14,0,0,0"
+                                VerticalAlignment="Center" ToolTip="{Binding Tooltip}" Click="Row_Click"
+                                MouseRightButtonUp="Row_RightClick">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis" MaxWidth="230"/>
+                                        <ui:Icon Data="{StaticResource IconChevronDown}" Width="14" Height="14"
+                                                 StrokeThickness="2" Margin="6,1,0,0" VerticalAlignment="Center"
+                                                 Foreground="{StaticResource MutedBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="15" Margin="10,0,0,0"
+                                               Foreground="{Binding StatusBrush}" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding StatusMono}" Value="True">
+                                                        <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+
+                                <!-- İkinci satır: pil çubuğu / mikrofon seviyesi / alt yazı -->
+                                <Grid Margin="0,6,0,0">
+                                    <ProgressBar Style="{StaticResource GlassBar}" VerticalAlignment="Center"
+                                                 Value="{Binding Battery, Mode=OneWay}" Foreground="{Binding BatteryBrush}"
+                                                 Visibility="{Binding ShowBattery, Converter={StaticResource BoolToVis}}"/>
+
+                                    <ItemsControl ItemsSource="{Binding Meter}" Height="10" Margin="-1.5,0" Focusable="False"
+                                                  Visibility="{Binding ShowMeter, Converter={StaticResource BoolToVis}}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Rows="1"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border x:Name="Seg" Margin="1.5,0" CornerRadius="2" Background="{StaticResource TrackBrush}"/>
+                                                <DataTemplate.Triggers>
+                                                    <DataTrigger Binding="{Binding IsOn}" Value="True">
+                                                        <Setter TargetName="Seg" Property="Background" Value="{StaticResource OkBrush}"/>
+                                                    </DataTrigger>
+                                                </DataTemplate.Triggers>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="{Binding Subtitle}" FontSize="14" Foreground="{StaticResource MutedBrush}"
+                                               TextTrimming="CharacterEllipsis"
+                                               Visibility="{Binding ShowSubtitle, Converter={StaticResource BoolToVis}}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </DockPanel>
+</UserControl>

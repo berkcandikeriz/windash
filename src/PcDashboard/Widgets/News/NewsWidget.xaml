@@ -1,0 +1,58 @@
+<UserControl x:Class="PcDashboard.Widgets.News.NewsWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:PcDashboard.Controls">
+    <!-- Taslak: flex column; gap 6px; başlık satırı margin-bottom 8px -->
+    <DockPanel>
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,14">
+            <ui:TrackedText Style="{StaticResource WidgetLabel}" Text="Önemli haberler"/>
+            <ItemsControl ItemsSource="{Binding Categories}" HorizontalAlignment="Right" Focusable="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{StaticResource ChipButton}" Content="{Binding Name}"
+                                Command="{Binding DataContext.SelectCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <Grid>
+            <!-- Alana tam sığmayan haber gösterilmez (yarım satır görünmez) -->
+            <ItemsControl ItemsSource="{Binding Items}" Focusable="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ui:FitStackPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- padding 16px 0; border-top 1px .14; başlık 20px/600 line-height 1.35; meta 15px; gap 6px -->
+                        <Button Style="{StaticResource PlainButton}"
+                                Command="{Binding DataContext.OpenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}">
+                            <Border BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,1,0,0" Padding="0,16">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold"
+                                               TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                               LineHeight="27" LineStackingStrategy="BlockLineHeight" MaxHeight="54"/>
+                                    <TextBlock Text="{Binding Meta}" FontSize="15" Foreground="{StaticResource MutedBrush}"
+                                               Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="{Binding Status}" FontSize="15" Foreground="{StaticResource MutedBrush}"
+                       VerticalAlignment="Top" Margin="0,12,0,0"
+                       Visibility="{Binding Status, Converter={StaticResource TextToVis}}"/>
+        </Grid>
+    </DockPanel>
+</UserControl>

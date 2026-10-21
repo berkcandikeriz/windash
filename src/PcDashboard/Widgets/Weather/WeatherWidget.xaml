@@ -1,0 +1,62 @@
+<UserControl x:Class="PcDashboard.Widgets.Weather.WeatherWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:PcDashboard.Controls">
+    <!-- Taslak: flex column; gap 18px; tahmin satırı margin-top: auto -->
+    <DockPanel>
+        <Grid DockPanel.Dock="Top">
+            <ui:TrackedText Style="{StaticResource WidgetLabel}" Text="Hava durumu"/>
+            <TextBlock FontSize="15" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right"
+                       VerticalAlignment="Center" Text="{Binding Status}"/>
+        </Grid>
+
+        <!-- 5 günlük tahmin: grid 5 sütun, gap 10px; kutu radius 12px, padding 12px 8px, gap 4px -->
+        <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding Days}" Focusable="False" Margin="-5,0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Background="{StaticResource InnerBrush}" CornerRadius="12" Margin="5,0" Padding="8,12">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding Day}" FontSize="15" Foreground="{StaticResource MutedBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Max}" FontSize="20" FontWeight="SemiBold"
+                                       HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding Min}" FontSize="14" Foreground="{StaticResource MutedBrush}"
+                                       HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Anlık durum: ikon 76px; gap 24px -->
+        <Grid Margin="0,18" VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:Icon Data="{Binding Icon}" Width="76" Height="76" StrokeThickness="1.5"
+                     Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
+
+            <StackPanel Grid.Column="1" Margin="24,0,0,0" VerticalAlignment="Center">
+                <!-- font-size 72px; weight 300; line-height 1 -->
+                <TextBlock Text="{Binding Temperature}" FontSize="72" FontWeight="Light"
+                           LineHeight="72" LineStackingStrategy="BlockLineHeight"/>
+                <TextBlock Text="{Binding Description}" FontSize="18" Foreground="{StaticResource StrongBrush}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <TextBlock FontSize="16" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right" Text="{Binding HighLow}"/>
+                <TextBlock FontSize="16" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right" Margin="0,6" Text="{Binding HumidityWind}"/>
+                <TextBlock FontSize="16" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right" Text="{Binding Precipitation}"/>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WinDash kurulumuna özel Türkçe metinler (standart pencerelerin metinleri WiX UI uzantısından gelir). -->
+<WixLocalization Culture="tr-TR" Codepage="1254" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="WD_DialogTitle" Value="WinDash Kurulumu" />
+  <String Id="WD_Downgrade" Value="Bilgisayarınızda WinDash'in daha yeni bir sürümü yüklü. Kurulum durduruldu." />
+
+  <String Id="WD_InstallButton" Value="&amp;Kur" />
+  <String Id="WD_UpdateButton" Value="&amp;Güncelle" />
+  <String Id="WD_RepairButton" Value="&amp;Onar" />
+  <String Id="WD_RemoveButton" Value="&amp;Kaldır" />
+  <String Id="WD_AutostartCheckbox" Value="Windows açılınca WinDash'i başlat" />
+
+  <String Id="WD_InstallTitle" Value="{\WixUI_Font_Bigger}WinDash [ProductVersion] kurulacak" />
+  <String Id="WD_InstallText" Value="WinDash yalnızca sizin kullanıcı hesabınıza kurulur, yönetici izni gerekmez. Devam etmek için Kur düğmesine tıklayın." />
+
+  <String Id="WD_UpgradeTitle" Value="{\WixUI_Font_Bigger}WinDash zaten yüklü" />
+  <String Id="WD_UpgradeText" Value="Bilgisayarınızda WinDash [OLDVERSION] yüklü. Yeni sürüme ([ProductVersion]) güncellemek istiyor musunuz?&#13;&#10;&#13;&#10;Ayarlarınız, kart seçimleriniz ve uygulama listeniz korunur. Açık olan WinDash güncelleme sırasında kapatılıp yeniden başlatılır." />
+  <String Id="WD_SameVersionText" Value="WinDash [ProductVersion] zaten yüklü. Aynı sürümü yeniden kurmak istiyor musunuz?&#13;&#10;&#13;&#10;Ayarlarınız ve seçimleriniz korunur." />
+  <String Id="WD_UnknownVersionText" Value="Bilgisayarınızda WinDash'in eski bir sürümü yüklü. Yeni sürüme ([ProductVersion]) güncellemek istiyor musunuz?&#13;&#10;&#13;&#10;Ayarlarınız, kart seçimleriniz ve uygulama listeniz korunur." />
+
+  <String Id="WD_MaintenanceTitle" Value="{\WixUI_Font_Bigger}WinDash [ProductVersion] yüklü" />
+  <String Id="WD_MaintenanceText" Value="Bu sürüm bilgisayarınızda zaten yüklü.&#13;&#10;&#13;&#10;Onar: eksik veya bozulan dosyaları yeniden kurar.&#13;&#10;Kaldır: WinDash'i bilgisayardan kaldırır (ayarlarınız %LOCALAPPDATA%\WinDash klasöründe kalır)." />
+</WixLocalization>

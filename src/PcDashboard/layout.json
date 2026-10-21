@@ -1,0 +1,21 @@
+{
+  // 1920x1080 tasarım alanı, 12 sütun x 12 satır (bir satır ≈ 86 px).
+  // Column/Row 0'dan başlar. Bir widget'ı kaldırmak için satırını silmen yeterli.
+  // Türler: window, clock, weather, apps, calendar, media, news, devices, controls, network, system
+  // "Variant": "compact" → system kartının 2x2 görünümü
+  // Version: yeni sürümlerde varsayılan yerleşim değişirse artar (eski kopya layout.backup.json olarak saklanır).
+  "Version": 2,
+  "Columns": 12,
+  "Rows": 12,
+  "Widgets": [
+    { "Type": "clock",    "Column": 0, "Row": 0,  "ColumnSpan": 4, "RowSpan": 4 },
+    { "Type": "weather",  "Column": 0, "Row": 4,  "ColumnSpan": 4, "RowSpan": 4 },
+    { "Type": "apps",     "Column": 0, "Row": 8,  "ColumnSpan": 4, "RowSpan": 4 },
+    { "Type": "media",    "Column": 4, "Row": 0,  "ColumnSpan": 5, "RowSpan": 6 },
+    { "Type": "news",     "Column": 4, "Row": 6,  "ColumnSpan": 5, "RowSpan": 6 },
+    { "Type": "window",   "Column": 9, "Row": 0,  "ColumnSpan": 3, "RowSpan": 1 },
+    { "Type": "devices",  "Column": 9, "Row": 1,  "ColumnSpan": 3, "RowSpan": 5 },
+    { "Type": "controls", "Column": 9, "Row": 6,  "ColumnSpan": 3, "RowSpan": 4 },
+    { "Type": "system",   "Column": 9, "Row": 10, "ColumnSpan": 3, "RowSpan": 2, "Variant": "compact" }
+  ]
+}

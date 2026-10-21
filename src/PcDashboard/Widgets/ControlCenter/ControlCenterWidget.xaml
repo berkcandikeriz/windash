@@ -1,0 +1,141 @@
+<UserControl x:Class="PcDashboard.Widgets.ControlCenter.ControlCenterWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:PcDashboard.Controls">
+    <UserControl.Resources>
+        <!--
+            Kutucuk ikon dairesi: 44px. Açıkken vurgu rengi + koyu ikon (stroke 2),
+            kapalıyken rgba(255,255,255,.14) + beyaz ikon (stroke 1.8).
+        -->
+        <Style x:Key="TileCircle" TargetType="Border">
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="CornerRadius" Value="22"/>
+            <Setter Property="Background" Value="{StaticResource IconOffBrush}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Taslak: flex column; gap 14px -->
+    <StackPanel>
+        <!-- Wi-Fi: padding 0 4px; ikon 34px; gap 14px -->
+        <Grid Margin="4,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:Icon Data="{Binding Network.Icon}" Width="34" Height="34" Foreground="{DynamicResource AccentBrush}"
+                     VerticalAlignment="Center"/>
+
+            <StackPanel Grid.Column="1" Margin="14,0,10,0" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Network.Title}" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="{Binding Network.Details}" FontSize="13" Foreground="{StaticResource MutedBrush}"
+                           Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Network.Latency}" FontFamily="{StaticResource MonoFont}" FontSize="13"
+                           Foreground="{StaticResource StrongBrush}" HorizontalAlignment="Right"/>
+                <TextBlock Text="{Binding Network.Throughput}" FontFamily="{StaticResource MonoFont}" FontSize="13"
+                           Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right" Margin="0,3,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Kutucuklar: 2 sütun, gap 12px -->
+        <UniformGrid Columns="2" Margin="-6,14,-6,0">
+            <Button Style="{StaticResource TileButton}" Margin="6,0" Command="{Binding ToggleBluetoothCommand}"
+                    ToolTip="{Binding BluetoothTooltip}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border>
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource TileCircle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding BluetoothOn}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <ui:Icon Data="{StaticResource IconBluetooth}" Width="22" Height="22">
+                            <ui:Icon.Style>
+                                <Style TargetType="ui:Icon" BasedOn="{StaticResource {x:Type ui:Icon}}">
+                                    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                                    <Setter Property="StrokeThickness" Value="1.8"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding BluetoothOn}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource OnAccentBrush}"/>
+                                            <Setter Property="StrokeThickness" Value="2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:Icon.Style>
+                        </ui:Icon>
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Bluetooth" FontSize="16" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding BluetoothText}" FontSize="13" Foreground="{StaticResource MutedBrush}"
+                                   Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Grid>
+            </Button>
+
+            <Button Style="{StaticResource TileButton}" Margin="6,0" Command="{Binding ToggleNightLightCommand}"
+                    ToolTip="Tıkla: aç / kapat · Sağ tık: Gece ışığı ayarları">
+                <Button.InputBindings>
+                    <MouseBinding MouseAction="RightClick" Command="{Binding OpenNightLightSettingsCommand}"/>
+                </Button.InputBindings>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border>
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource TileCircle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding NightLightOn}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <ui:Icon Data="{StaticResource IconNightLight}" Width="22" Height="22">
+                            <ui:Icon.Style>
+                                <Style TargetType="ui:Icon" BasedOn="{StaticResource {x:Type ui:Icon}}">
+                                    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                                    <Setter Property="StrokeThickness" Value="1.8"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NightLightOn}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource OnAccentBrush}"/>
+                                            <Setter Property="StrokeThickness" Value="2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:Icon.Style>
+                        </ui:Icon>
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Gece Işığı" FontSize="16" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding NightLightText}" FontSize="13" Foreground="{StaticResource MutedBrush}"
+                                   Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Grid>
+            </Button>
+        </UniformGrid>
+
+        <!-- Parlaklık ve ses: 44px hap kaydırıcılar -->
+        <ui:PillSlider Margin="0,14,0,0" Icon="{StaticResource IconBrightness}" Text="{Binding BrightnessText}"
+                       Value="{Binding Brightness, Mode=TwoWay}" IsEnabled="{Binding BrightnessSupported}"
+                       ToolTip="Ekran parlaklığı (DDC/CI) · fare tekerleği ile de ayarlanır"/>
+
+        <ui:PillSlider Margin="0,14,0,0" Icon="{Binding VolumeIcon}" Text="{Binding VolumeText}"
+                       Value="{Binding Volume, Mode=TwoWay}" IsEnabled="{Binding VolumeAvailable}"
+                       IconCommand="{Binding ToggleMuteCommand}"
+                       ToolTip="Ses seviyesi · ikona tıkla: sessize al"/>
+    </StackPanel>
+</UserControl>

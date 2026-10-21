@@ -1,0 +1,49 @@
+<UserControl x:Class="PcDashboard.Widgets.SystemInfo.SystemInfoWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:PcDashboard.Controls">
+    <Grid>
+        <!-- Kompakt (taslak): 2x2 ızgara; column-gap 24px; row-gap 14px; etiket 15px; değer mono 13px -->
+        <ItemsControl ItemsSource="{Binding Metrics}" Focusable="False" VerticalAlignment="Center" Margin="-12,-7"
+                      Visibility="{Binding Compact, Converter={StaticResource BoolToVis}}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="2"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="12,7">
+                        <Grid>
+                            <TextBlock Text="{Binding Label}" FontSize="15"/>
+                            <TextBlock Text="{Binding Value}" FontFamily="{StaticResource MonoFont}" FontSize="13"
+                                       Foreground="{StaticResource StrongBrush}" HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                        <ProgressBar Style="{StaticResource GlassBar}" Margin="0,6,0,0" Value="{Binding Percent, Mode=OneWay}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Geniş: başlık + alt alta çubuklar -->
+        <DockPanel Visibility="{Binding Compact, Converter={StaticResource InvBoolToVis}}">
+            <ui:TrackedText DockPanel.Dock="Top" Style="{StaticResource WidgetLabel}" Text="Sistem"
+                            HorizontalAlignment="Left" Margin="0,0,0,16"/>
+            <ItemsControl ItemsSource="{Binding Metrics}" Focusable="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,0,0,16">
+                            <Grid>
+                                <TextBlock Text="{Binding Label}" FontSize="16"/>
+                                <TextBlock Text="{Binding Value}" Style="{StaticResource MonoText}"
+                                           Foreground="{StaticResource StrongBrush}" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <ProgressBar Style="{StaticResource GlassBar}" Margin="0,6,0,0" Value="{Binding Percent, Mode=OneWay}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DockPanel>
+    </Grid>
+</UserControl>

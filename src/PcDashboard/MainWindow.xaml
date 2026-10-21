@@ -1,0 +1,51 @@
+<Window x:Class="PcDashboard.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinDash"
+        Icon="Assets/WinDash.ico"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowStartupLocation="Manual"
+        Left="0" Top="0" Width="1920" Height="1080"
+        Background="#1C2645"
+        FontFamily="{StaticResource UiFont}"
+        Foreground="{StaticResource TextBrush}"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Grayscale">
+
+    <!-- Kenarlıksız pencere; pencere modunda kenarlardan yeniden boyutlandırılabilir -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="6" GlassFrameThickness="0"
+                      CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.ContextMenu>
+        <ContextMenu Opened="ContextMenu_Opened">
+            <MenuItem Header="Yenile (F5)" Click="Reload_Click"/>
+            <MenuItem Header="Ayar klasörünü aç" Click="OpenSettings_Click"/>
+            <MenuItem Header="Günlüğü aç" Click="OpenLog_Click"/>
+            <Separator/>
+            <MenuItem x:Name="AutostartItem" Header="Windows ile başlat" IsCheckable="False" Click="Autostart_Click"/>
+            <Separator/>
+            <MenuItem Header="Çıkış (Ctrl+Q)" Click="Exit_Click"/>
+        </ContextMenu>
+    </Window.ContextMenu>
+
+    <Grid>
+        <!-- Ekran 16:9 değilse kenarlarda görünen bulanık duvar kâğıdı -->
+        <Image x:Name="WallpaperImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+        <Rectangle x:Name="DimLayer" Fill="#060810" Opacity="0.22"/>
+
+        <!-- Tasarım 1920x1080 üzerinde yapıldı; Viewbox her çözünürlük ve ölçekte aynı görünmesini sağlar -->
+        <Viewbox Stretch="Uniform">
+            <Grid x:Name="DesignRoot" Width="1920" Height="1080">
+                <!-- Bulanık duvar kâğıdı + kart gölgeleri + kart altı cam efekti (tek bitmap) -->
+                <Image x:Name="BackdropImage" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <!-- padding: 32px; gap: 20px → kart kenar boşluğu 10px + ızgara kenarı 22px -->
+                <Grid x:Name="WidgetGrid" Margin="22"/>
+
+            </Grid>
+        </Viewbox>
+    </Grid>
+</Window>

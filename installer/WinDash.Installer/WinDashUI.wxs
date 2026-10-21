@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  WinDash kurulum arayüzü (WiX UI uzantısının standart ilerleme / hata / bitiş pencereleriyle).
+
+  Açılış penceresi duruma göre değişir:
+   - İlk kurulum            : "WinDash <sürüm> kurulacak"                         [Kur] [İptal]
+   - Eski sürüm kurulu      : "WinDash <eski> yüklü. Yeni sürüme (<yeni>) güncellemek istiyor musunuz?"
+                                                                                  [Güncelle] [İptal]
+   - Aynı sürüm kurulu      : "Bu sürüm zaten yüklü. Yeniden kurulsun mu?"          [Güncelle] [İptal]
+   - Aynı paket kurulu      : bakım penceresi                                      [Onar] [Kaldır] [İptal]
+  Daha yeni bir sürüm kuruluysa kurulum hata verip durur (eski sürüme dönüş yok).
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <!-- Açılış penceresindeki düğme: varsayılan "Kur", kurulu sürüm bulunduysa "Güncelle" -->
+    <Property Id="WD_ACTIONBUTTON" Value="!(loc.WD_InstallButton)" />
+    <SetProperty Id="WD_ACTIONBUTTON" Value="!(loc.WD_UpdateButton)" After="FindRelatedProducts"
+                 Sequence="ui" Condition="WIX_UPGRADE_DETECTED" />
+
+    <UI Id="WinDashUI">
+      <TextStyle Id="WixUI_Font_Normal" FaceName="Segoe UI" Size="9" />
+      <TextStyle Id="WixUI_Font_Bigger" FaceName="Segoe UI" Size="12" />
+      <TextStyle Id="WixUI_Font_Title" FaceName="Segoe UI" Size="9" Bold="yes" />
+      <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+
+      <DialogRef Id="ErrorDlg" />
+      <DialogRef Id="FatalError" />
+      <DialogRef Id="FilesInUse" />
+      <DialogRef Id="MsiRMFilesInUse" />
+      <DialogRef Id="PrepareDlg" />
+      <DialogRef Id="ProgressDlg" />
+      <DialogRef Id="UserExit" />
+      <DialogRef Id="CancelDlg" />
+      <DialogRef Id="ExitDialog" />
+
+      <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999" />
+
+      <!-- ===================== Kur / Güncelle ===================== -->
+      <Dialog Id="WinDashWelcomeDlg" Width="370" Height="270" Title="!(loc.WD_DialogTitle)">
+        <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="!(loc.WelcomeDlgBitmap)" />
+
+        <Control Id="InstallTitle" Type="Text" X="135" Y="20" Width="220" Height="50" Transparent="yes" NoPrefix="yes"
+                 Hidden="yes" Text="!(loc.WD_InstallTitle)" ShowCondition="NOT WIX_UPGRADE_DETECTED" />
+        <Control Id="UpgradeTitle" Type="Text" X="135" Y="20" Width="220" Height="50" Transparent="yes" NoPrefix="yes"
+                 Hidden="yes" Text="!(loc.WD_UpgradeTitle)" ShowCondition="WIX_UPGRADE_DETECTED" />
+
+        <Control Id="InstallText" Type="Text" X="135" Y="75" Width="220" Height="70" Transparent="yes" NoPrefix="yes"
+                 Hidden="yes" Text="!(loc.WD_InstallText)" ShowCondition="NOT WIX_UPGRADE_DETECTED" />
+        <Control Id="UpgradeText" Type="Text" X="135" Y="75" Width="220" Height="70" Transparent="yes" NoPrefix="yes"
+                 Hidden="yes" Text="!(loc.WD_UpgradeText)"
+                 ShowCondition="WIX_UPGRADE_DETECTED AND OLDVERSION AND OLDVERSION &lt;&gt; ProductVersion" />
+        <Control Id="SameVersionText" Type="Text" X="135" Y="75" Width="220" Height="70" Transparent="yes" NoPrefix="yes"
+                 Hidden="yes" Text="!(loc.WD_SameVersionText)"
+                 ShowCondition="WIX_UPGRADE_DETECTED AND OLDVERSION = ProductVersion" />
+        <Control Id="UnknownVersionText" Type="Text" X="135" Y="75" Width="220" Height="70" Transparent="yes" NoPrefix="yes"
+                 Hidden="yes" Text="!(loc.WD_UnknownVersionText)" ShowCondition="WIX_UPGRADE_DETECTED AND NOT OLDVERSION" />
+
+        <Control Id="Autostart" Type="CheckBox" X="135" Y="160" Width="220" Height="17" Property="AUTOSTART"
+                 CheckBoxValue="1" Text="!(loc.WD_AutostartCheckbox)" />
+
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Action" Type="PushButton" X="232" Y="243" Width="66" Height="17" Default="yes" Text="[WD_ACTIONBUTTON]">
+          <Publish Event="EndDialog" Value="Return" />
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg" />
+        </Control>
+      </Dialog>
+
+      <!-- ===================== Onar / Kaldır ===================== -->
+      <Dialog Id="WinDashMaintenanceDlg" Width="370" Height="270" Title="!(loc.WD_DialogTitle)">
+        <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="!(loc.WelcomeDlgBitmap)" />
+        <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="50" Transparent="yes" NoPrefix="yes"
+                 Text="!(loc.WD_MaintenanceTitle)" />
+        <Control Id="Description" Type="Text" X="135" Y="75" Width="220" Height="100" Transparent="yes" NoPrefix="yes"
+                 Text="!(loc.WD_MaintenanceText)" />
+
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Repair" Type="PushButton" X="176" Y="243" Width="60" Height="17" Default="yes" Text="!(loc.WD_RepairButton)">
+          <Publish Property="WixUI_InstallMode" Value="Repair" Order="1" />
+          <Publish Event="ReinstallMode" Value="ecmus" Order="2" />
+          <Publish Event="Reinstall" Value="All" Order="3" />
+          <Publish Event="EndDialog" Value="Return" Order="4" />
+        </Control>
+        <Control Id="Remove" Type="PushButton" X="240" Y="243" Width="60" Height="17" Text="!(loc.WD_RemoveButton)">
+          <Publish Property="WixUI_InstallMode" Value="Remove" Order="1" />
+          <Publish Event="Remove" Value="All" Order="2" />
+          <Publish Event="EndDialog" Value="Return" Order="3" />
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg" />
+        </Control>
+      </Dialog>
+
+      <InstallUISequence>
+        <Show Dialog="WinDashWelcomeDlg" Before="ProgressDlg" Condition="NOT Installed" />
+        <Show Dialog="WinDashMaintenanceDlg" Before="ProgressDlg"
+              Condition="Installed AND NOT RESUME AND NOT Preselected AND NOT PATCH" />
+      </InstallUISequence>
+    </UI>
+
+    <!-- Banner / arka plan resimleri ve ortak metinler -->
+    <UIRef Id="WixUI_Common" />
+  </Fragment>
+</Wix>

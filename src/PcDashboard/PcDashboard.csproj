@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows 10 2004+ : Windows.Media.Control, Windows.Devices.Radios / Bluetooth için gerekli -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- .NET 8 hedefinin C# sürümü. "latest" yeni SDK'larda C# 14'e geçer ve dizilerde Reverse() gibi
+         çağrıların anlamını değiştirir; sabit tutuyoruz. -->
+    <LangVersion>12</LangVersion>
+    <RootNamespace>PcDashboard</RootNamespace>
+    <AssemblyName>WinDash</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- exe'nin, görev çubuğunun ve Başlat menüsünün ikonu -->
+    <ApplicationIcon>Assets\WinDash.ico</ApplicationIcon>
+    <Version>1.1.0</Version>
+    <Product>WinDash</Product>
+    <AssemblyTitle>WinDash</AssemblyTitle>
+    <Company>WinDash</Company>
+  </PropertyGroup>
+
+  <!--
+    WPF projelerinde .NET, System.IO ve System.Net.Http'yi örtük using listesinden bilerek çıkarır
+    (System.Windows.Shapes.Path ile çakışmasın diye). Projede File/Directory/MemoryStream/HttpClient
+    çok kullanıldığı için tüm dosyalara burada ekliyoruz; tek tek "using System.IO;" yazmaya gerek yok.
+  -->
+  <ItemGroup>
+    <Using Include="System.IO" />
+    <Using Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
+    <PackageReference Include="HidSharp" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Taslaktaki yazı tipleri (SIL Open Font License) uygulamaya gömülür -->
+    <Resource Include="Fonts\*.ttf" />
+    <!-- Pencere ve kontrol çubuğundaki ikon -->
+    <Resource Include="Assets\WinDash.ico" />
+    <None Update="Fonts\OFL-*.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="layout.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

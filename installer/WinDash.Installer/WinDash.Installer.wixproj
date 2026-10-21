@@ -1,0 +1,24 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <!--
+    WinDash MSI kurulum paketi (WiX Toolset v5).
+    Doğrudan derlemek yerine depo kökündeki build-installer.ps1'i kullan: önce uygulamayı yayınlar,
+    sonra bu projeyi derler ve artifacts\WinDash-Setup-<sürüm>.msi üretir.
+  -->
+  <PropertyGroup>
+    <OutputName>WinDash-Setup</OutputName>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <Version Condition="'$(Version)' == ''">1.1.0</Version>
+    <!-- dotnet publish çıktısının bulunduğu klasör (sonunda \ olmalı) -->
+    <AppPublishDir Condition="'$(AppPublishDir)' == ''">$(MSBuildThisFileDirectory)..\..\artifacts\publish\</AppPublishDir>
+    <DefineConstants>Version=$(Version);AppPublishDir=$(AppPublishDir);IconFile=$(MSBuildThisFileDirectory)..\..\src\PcDashboard\Assets\WinDash.ico</DefineConstants>
+    <!-- ICE91: profil klasörüne kurulum, ICE61: AllowSameVersionUpgrades; bilinen uyarılar, hata sayılmasın -->
+    <SuppressIces>ICE91;ICE61</SuppressIces>
+    <!-- Kurulum penceresinin dili (WiX UI metinleri + WinDash.tr-TR.wxl) -->
+    <Cultures>tr-TR</Cultures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+  </ItemGroup>
+</Project>

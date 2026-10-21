@@ -1,0 +1,68 @@
+<UserControl x:Class="PcDashboard.Widgets.WindowBar.WindowBarWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:PcDashboard.Controls"
+             Background="Transparent"
+             MouseLeftButtonDown="Bar_MouseLeftButtonDown">
+    <UserControl.Resources>
+        <!-- Karttaki ikonlar: 18px, çizgi 2px, rengi düğmeden (Kapat'ta üzerine gelince beyaz) -->
+        <Style TargetType="ui:Icon" BasedOn="{StaticResource {x:Type ui:Icon}}">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="StrokeThickness" Value="2"/>
+        </Style>
+    </UserControl.Resources>
+
+    <!--
+        Pencere kartı (Cihazlar'ın üstünde):
+        [Masaüstü][Başlat][Ara] | (ikon) WinDash ........ [Küçült][Büyüt][Tam ekran][Kapat]
+        Soldaki üç düğme yalnızca tam ekranda görünür (görev çubuğu örtülüyken ona erişmek için).
+    -->
+    <Grid VerticalAlignment="Center">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel x:Name="ShellTools" Orientation="Horizontal" VerticalAlignment="Center">
+            <Button Style="{StaticResource ChromeButton}" Click="ShowDesktop_Click"
+                    ToolTip="Masaüstüne dön · tüm pencereleri küçültür">
+                <ui:Icon Data="{StaticResource IconDesktop}"/>
+            </Button>
+            <Button Style="{StaticResource ChromeButton}" Click="Start_Click"
+                    ToolTip="Başlat menüsünü aç">
+                <ui:Icon Data="{StaticResource IconStart}"/>
+            </Button>
+            <Button Style="{StaticResource ChromeButton}" Click="Search_Click"
+                    ToolTip="Windows'ta ara (Win+S)">
+                <ui:Icon Data="{StaticResource IconSearch}"/>
+            </Button>
+            <Border Width="1" Height="20" Margin="8,0" Background="{StaticResource TrackBrush}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,8,0"
+                    IsHitTestVisible="False">
+            <Image Source="/Assets/WinDash.ico" Width="20" Height="20" RenderOptions.BitmapScalingMode="HighQuality"/>
+            <TextBlock Text="WinDash" FontSize="15" FontWeight="SemiBold" Margin="8,0,0,0"
+                       Foreground="{StaticResource StrongBrush}" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+            <Button Style="{StaticResource ChromeButton}" Click="Minimize_Click"
+                    ToolTip="Küçült · görev çubuğuna indirir">
+                <ui:Icon Data="{StaticResource IconMinimize}"/>
+            </Button>
+            <Button x:Name="MaximizeButton" Style="{StaticResource ChromeButton}" Click="Maximize_Click">
+                <ui:Icon x:Name="MaximizeIcon" Data="{StaticResource IconMaximize}"/>
+            </Button>
+            <Button x:Name="FullScreenButton" Style="{StaticResource ChromeButton}" Click="FullScreen_Click">
+                <ui:Icon x:Name="FullScreenIcon" Data="{StaticResource IconFullscreen}"/>
+            </Button>
+            <Button Style="{StaticResource ChromeCloseButton}" Click="Close_Click"
+                    ToolTip="WinDash'i kapat (Ctrl+Q)">
+                <ui:Icon Data="{StaticResource IconClose}"/>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

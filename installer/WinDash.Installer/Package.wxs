@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  WinDash kurulumu
+   - Kullanıcı bazlı (yönetici izni gerekmez): %LOCALAPPDATA%\Programs\WinDash
+   - Başlat menüsü kısayolu
+   - Windows ile başlat (HKCU\...\Run). Kapatmak için: msiexec /i WinDash-Setup.msi AUTOSTART=0
+     veya kurulumdan sonra panelde sağ tık > Windows ile başlat
+   - Yükseltme: WinDash zaten kuruluysa kurulum "Yeni sürüme güncellemek istiyor musunuz?" diye sorar;
+     Güncelle'ye basılınca eski sürüm kaldırılıp yenisi kurulur, çalışan WinDash kapatılır
+   - Aynı paket yeniden açılırsa: Onar / Kaldır seçenekleri
+   - Metinler: WinDash.tr-TR.wxl
+   - Kullanıcı ayarları ve seçimler (%LOCALAPPDATA%\WinDash) kaldırmada SİLİNMEZ
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <Package Name="WinDash"
+           Manufacturer="WinDash"
+           Version="$(var.Version)"
+           UpgradeCode="5B8E1F3A-6C2D-4A7E-9F10-3D4C5B6A7E81"
+           Scope="perUser"
+           Language="1055"
+           Codepage="1254"
+           Compressed="yes">
+
+    <SummaryInformation Description="WinDash - kisisel gosterge paneli" Manufacturer="WinDash" />
+
+    <!-- AllowSameVersionUpgrades: aynı sürüm numarasıyla yeniden derlenmiş paket de güncelleme sayılır -->
+    <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="!(loc.WD_Downgrade)" />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- Programlar ve Özellikler'de görünen ikon -->
+    <Icon Id="WinDashIcon.ico" SourceFile="$(var.IconFile)" />
+    <Property Id="ARPPRODUCTICON" Value="WinDashIcon.ico" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+
+    <!-- Kurulu sürüm (güncelleme sorusunda gösterilir). 1.0.0 bu değeri yazmadığı için boş olabilir. -->
+    <Property Id="OLDVERSION" Secure="yes">
+      <RegistrySearch Id="OldVersionSearch" Root="HKCU" Key="Software\WinDash" Name="Version" Type="raw" />
+    </Property>
+
+    <!-- 1: Windows ile başlat (varsayılan), 0: başlatma -->
+    <Property Id="AUTOSTART" Value="1" Secure="yes" />
+
+    <!-- Yükseltme / kaldırma sırasında çalışan WinDash'i kapat -->
+    <util:CloseApplication Id="CloseWinDash" Target="WinDash.exe" CloseMessage="yes"
+                           RebootPrompt="no" TerminateProcess="0" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsDir" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="WinDash" />
+      </Directory>
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <Feature Id="Main" Title="WinDash" Level="1">
+      <ComponentRef Id="AppFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="AutostartEntry" />
+    </Feature>
+
+    <!-- Kurulum bitince uygulamayı başlat (kaldırmada değil) -->
+    <CustomAction Id="LaunchWinDash" Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[INSTALLFOLDER]WinDash.exe&quot;" Return="asyncNoWait" Impersonate="yes" />
+    <UIRef Id="WinDashUI" />
+
+    <InstallExecuteSequence>
+      <Custom Action="LaunchWinDash" After="InstallFinalize" Condition="NOT (REMOVE~=&quot;ALL&quot;) AND UILevel &gt; 2" />
+    </InstallExecuteSequence>
+  </Package>
+
+  <Fragment>
+    <!-- Uygulama dosyaları. Profil klasörüne kurulduğu için anahtar yol HKCU kaydıdır (MSI kuralı). -->
+    <Component Id="AppFiles" Directory="INSTALLFOLDER" Guid="7A1C2E3F-4B5D-4E6F-8A9B-0C1D2E3F4A5B">
+      <File Id="WinDashExe" Source="$(var.AppPublishDir)WinDash.exe" />
+      <File Id="AppSettings" Source="$(var.AppPublishDir)appsettings.json" />
+      <File Id="Layout" Source="$(var.AppPublishDir)layout.json" />
+      <File Id="OflManrope" Source="$(var.AppPublishDir)Fonts\OFL-Manrope.txt" Name="OFL-Manrope.txt" />
+      <File Id="OflJetBrainsMono" Source="$(var.AppPublishDir)Fonts\OFL-JetBrainsMono.txt" Name="OFL-JetBrainsMono.txt" />
+      <RegistryValue Root="HKCU" Key="Software\WinDash" Name="InstallDir" Type="string" Value="[INSTALLFOLDER]" KeyPath="yes" />
+      <RegistryValue Root="HKCU" Key="Software\WinDash" Name="Version" Type="string" Value="[ProductVersion]" />
+      <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
+      <RemoveFolder Id="RemoveProgramsDir" Directory="ProgramsDir" On="uninstall" />
+    </Component>
+
+    <Component Id="StartMenuShortcut" Directory="ProgramMenuFolder" Guid="8B2D3F40-5C6E-4F70-9BAC-1D2E3F405B6C">
+      <Shortcut Id="WinDashStartMenu" Name="WinDash" Description="WinDash"
+                Target="[INSTALLFOLDER]WinDash.exe" WorkingDirectory="INSTALLFOLDER" Icon="WinDashIcon.ico" />
+      <RegistryValue Root="HKCU" Key="Software\WinDash" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Component Id="AutostartEntry" Directory="INSTALLFOLDER" Guid="9C3E4051-6D7F-4081-ACBD-2E3F40516C7D" Condition="AUTOSTART = 1">
+      <RegistryValue Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run" Name="WinDash" Type="string"
+                     Value="&quot;[INSTALLFOLDER]WinDash.exe&quot; --autostart" KeyPath="yes" />
+    </Component>
+  </Fragment>
+</Wix>
