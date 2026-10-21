@@ -245,5 +245,4 @@ src/PcDashboard/
 ## Lisanslar
 
 Manrope ve JetBrains Mono yazı tipleri SIL Open Font License 1.1 ile dağıtılır (`Fonts\OFL-*.txt`).
-#   w i n d a s h  
- 
+#
