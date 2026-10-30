@@ -24,16 +24,48 @@ public sealed class WallpaperService : IDisposable
     private const int SmallHeight = 360;
     private const double SmallScale = SmallWidth / DesignWidth;
 
-    private readonly DispatcherTimer _watchTimer = new() { Interval = TimeSpan.FromMinutes(1) };
-    private string? _watchedPath;
-    private DateTime _watchedWriteTime;
+    private readonly DispatcherTimer _watchTimer = new() { Interval = TimeSpan.FromSeconds(10) };
+    private readonly Dispatcher _dispatcher;
+    private string _signature = "";
+    private bool _disposed;
 
+    /// <summary>
+    /// Duvar kâğıdı değişince (Ayarlar, slayt gösterisi, Spotlight, monitöre özel resim, yerleştirme biçimi) tetiklenir.
+    /// Windows'un bildirimi gelince kısa bir gecikmeyle (dosya yazılırken eskisini okumamak için) ve ayrıca
+    /// 10 saniyede bir dosya / ayar karşılaştırmasıyla yakalanır.
+    /// </summary>
     public event EventHandler? Changed;
 
     public WallpaperService()
     {
+        _dispatcher = Dispatcher.CurrentDispatcher;
         _watchTimer.Tick += (_, _) => CheckForChange();
+        Microsoft.Win32.SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
     }
+
+    private void OnUserPreferenceChanged(object? sender, Microsoft.Win32.UserPreferenceChangedEventArgs e)
+    {
+        if (e.Category != Microsoft.Win32.UserPreferenceCategory.Desktop) return;
+        _dispatcher.InvokeAsync(() =>
+        {
+            // Windows yeni resmi biraz sonra yazabiliyor: önce kısa gecikmeyle yenile, sonra bir kez daha kontrol et
+            After(TimeSpan.FromMilliseconds(700), Raise);
+            After(TimeSpan.FromSeconds(3), CheckForChange);
+        });
+    }
+
+    private void After(TimeSpan delay, Action action)
+    {
+        var timer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher) { Interval = delay };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            if (!_disposed) action();
+        };
+        timer.Start();
+    }
+
+    private void Raise() => Changed?.Invoke(this, EventArgs.Empty);
 
     public static string? GetCurrentWallpaperPath()
     {
@@ -110,8 +142,10 @@ public sealed class WallpaperService : IDisposable
     ///  3. kartın altında kalan bölge: ek bulanıklık + %180 doygunluk (backdrop-filter: blur(30px) saturate(180%))
     /// Kartın yarı saydam rengi ve kenarlıkları WPF tarafından bunun üzerine çizilir.
     /// </summary>
+    /// <param name="includeBase">false: zemin çizilmez, yalnızca gölgeler ve kart altları (masaüstü paneli için;
+    /// kartların arası saydam kalır ve gerçek masaüstü görünür).</param>
     public static BitmapSource ComposeBackdrop(BitmapSource? blurred, IReadOnlyList<Rect> cards, double dimOpacity,
-        double cardRadius = 28)
+        double cardRadius = 28, bool includeBase = true)
     {
         var dimColor = Color.FromArgb((byte)Math.Clamp(dimOpacity * 255, 0, 255), 6, 8, 16);
         var fallback = Color.FromRgb(0x1C, 0x26, 0x45);
@@ -143,13 +177,16 @@ public sealed class WallpaperService : IDisposable
 
         return Render((int)DesignWidth, (int)DesignHeight, c =>
         {
-            c.Add(new Image
+            if (includeBase)
             {
-                Source = dimmedSmall,
-                Width = DesignWidth,
-                Height = DesignHeight,
-                Stretch = Stretch.Fill,
-            }, 0, 0);
+                c.Add(new Image
+                {
+                    Source = dimmedSmall,
+                    Width = DesignWidth,
+                    Height = DesignHeight,
+                    Stretch = Stretch.Fill,
+                }, 0, 0);
+            }
 
             // Gölgeler (kartın altında kalan kısmı bir sonraki adımda örtülür, CSS'teki gibi)
             foreach (var r in cards)
@@ -234,25 +271,32 @@ public sealed class WallpaperService : IDisposable
         return rtb;
     }
 
-    /// <summary>Slayt gösterisi gibi olay üretmeyen değişiklikleri yakalamak için dosyayı dakikada bir kontrol eder.</summary>
+    /// <summary>
+    /// Yenileme yapıldıktan sonra çağrılır: o anki duvar kâğıdı durumunu "uygulandı" olarak işaretler
+    /// ve olay üretmeyen değişiklikler için periyodik kontrolü başlatır.
+    /// </summary>
     public void Watch(string? path)
     {
-        _watchedPath = path;
-        _watchedWriteTime = path is not null && File.Exists(path) ? File.GetLastWriteTimeUtc(path) : default;
+        _signature = DesktopWallpaper.Signature();
         _watchTimer.Start();
     }
 
     private void CheckForChange()
     {
-        var current = GetCurrentWallpaperPath();
-        var write = current is not null && File.Exists(current) ? File.GetLastWriteTimeUtc(current) : default;
-        if (!string.Equals(current, _watchedPath, StringComparison.OrdinalIgnoreCase) || write != _watchedWriteTime)
-        {
-            Changed?.Invoke(this, EventArgs.Empty);
-        }
+        if (_disposed) return;
+        var current = DesktopWallpaper.Signature();
+        if (current == _signature) return;
+        _signature = current;
+        Log.Info("Duvar kâğıdı değişti, yenileniyor");
+        Raise();
     }
 
-    public void Dispose() => _watchTimer.Stop();
+    public void Dispose()
+    {
+        _disposed = true;
+        _watchTimer.Stop();
+        Microsoft.Win32.SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
+    }
 }
 
 internal static class CanvasExtensions

@@ -1,10 +1,10 @@
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using PcDashboard.Controls;
 using PcDashboard.Core;
 using PcDashboard.Services;
 
@@ -18,6 +18,9 @@ public partial class MainWindow : Window
     private AppSettings _settings;
     private BitmapSource? _blurredWallpaper;
     private bool _loading;
+    private LayoutConfig _layout = new();
+    private LayoutEditor? _editor;
+    private System.Windows.Controls.Primitives.Popup? _editBar;
 
     public MainWindow()
     {
@@ -36,12 +39,19 @@ public partial class MainWindow : Window
         };
         Loaded += async (_, _) => await LoadAllAsync(reloadSettings: false);
         Closed += OnClosed;
+        // Dışarıdan kapatıldıysa (WM_CLOSE: kurulum programı, oturum kapanışı) uygulama da kapansın
+        Closing += (_, _) =>
+        {
+            if (!App.Current.IsExiting) App.Current.BeginExit();
+        };
         PreviewKeyDown += OnPreviewKeyDown;
 
         _wallpaper.Changed += (_, _) => ApplyWallpaper();
         SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
-        SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
     }
+
+    /// <summary>F5 / menü > Yenile. Pencere hiç açılmadıysa bir şey yapmaz (açıldığında zaten yüklenir).</summary>
+    public Task ReloadAsync() => IsLoaded ? LoadAllAsync(reloadSettings: true) : Task.CompletedTask;
 
     private async Task LoadAllAsync(bool reloadSettings)
     {
@@ -59,8 +69,10 @@ public partial class MainWindow : Window
             Autostart.Sync(_settings.StartWithWindows);
             AudioHub.Aliases = _settings.Devices.AudioAliases;
 
+            EndEdit(keep: false);
             DisposeWidgets();
-            BuildGrid(SettingsLoader.LoadLayout());
+            _layout = SettingsLoader.LoadLayout();
+            BuildGrid(_layout);
             ApplyWallpaper();
 
             foreach (var vm in _widgets.ToList())
@@ -120,6 +132,7 @@ public partial class MainWindow : Window
                 Style = (Style)FindResource("GlassCard"),
                 Padding = instance.Padding,
                 Content = instance.View,
+                Tag = placement,
             };
 
             Grid.SetColumn(card, Math.Clamp(placement.Column, 0, columns - 1));
@@ -175,6 +188,75 @@ public partial class MainWindow : Window
         }
     }
 
+    // ---------- Düzenle ----------
+
+    public bool IsEditing => _editor is not null;
+
+    /// <summary>Kartları taşıma / boyutlandırma modu (12 x 12 ızgara).</summary>
+    public void BeginEdit()
+    {
+        if (IsEditing || !IsLoaded) return;
+        ShowDashboard();
+        _editor = new LayoutEditor(WidgetGrid, _cards, ComposeBackdrop);
+        _editor.Begin();
+        _editBar = EditToolbar.Show(DesignRoot, "Kartı sürükle: taşı · sağ alt köşe: boyutlandır",
+            done: () => EndEdit(keep: true),
+            cancel: () => EndEdit(keep: false),
+            reset: ResetLayout);
+        DisplayModeChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void EndEdit(bool keep)
+    {
+        if (_editor is null) return;
+        _editor.End(keep);
+        _editor = null;
+        if (_editBar is not null) _editBar.IsOpen = false;
+        _editBar = null;
+
+        if (keep) SaveLayout();
+        ComposeBackdrop();
+        DisplayModeChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Yerleşimi kullanıcının layout.json kopyasına yazar (%LOCALAPPDATA%\WinDash).</summary>
+    private void SaveLayout()
+    {
+        try
+        {
+            _layout.Widgets = _cards.Select(c => c.Tag).OfType<WidgetPlacement>()
+                .Concat(_layout.Widgets.Where(w => !_cards.Any(c => ReferenceEquals(c.Tag, w))))
+                .Distinct()
+                .ToList();
+            var json = System.Text.Json.JsonSerializer.Serialize(_layout,
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(AppPaths.UserFile("layout.json"), json);
+            Log.Info("Yerleşim kaydedildi");
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Yerleşim kaydedilemedi", ex);
+        }
+    }
+
+    private async void ResetLayout()
+    {
+        EndEdit(keep: false);
+        try
+        {
+            var source = AppPaths.DefaultFile("layout.json");
+            if (File.Exists(source)) File.Copy(source, AppPaths.UserFile("layout.json"), overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Varsayılan yerleşim geri yüklenemedi", ex);
+        }
+
+        await LoadAllAsync(reloadSettings: false);
+    }
+
+    private void Edit_Click(object sender, RoutedEventArgs e) => BeginEdit();
+
     private void DisposeWidgets()
     {
         foreach (var vm in _widgets) vm.Dispose();
@@ -190,18 +272,12 @@ public partial class MainWindow : Window
             if (_mode != DisplayMode.Windowed) ApplyMode();
         });
 
-    private void OnUserPreferenceChanged(object? sender, UserPreferenceChangedEventArgs e)
-    {
-        if (e.Category == UserPreferenceCategory.Desktop)
-            Dispatcher.InvokeAsync(ApplyWallpaper);
-    }
-
-    private async void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.F5)
         {
             e.Handled = true;
-            await LoadAllAsync(reloadSettings: true);
+            App.Current.ReloadAll();
         }
         else if (e.Key == Key.F11)
         {
@@ -211,17 +287,23 @@ public partial class MainWindow : Window
         else if (e.Key == Key.Q && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
         {
             e.Handled = true;
-            Close();
+            App.Current.ExitApp();
         }
     }
 
-    private async void Reload_Click(object sender, RoutedEventArgs e) => await LoadAllAsync(reloadSettings: true);
+    private void Reload_Click(object sender, RoutedEventArgs e) => App.Current.ReloadAll();
 
-    private void OpenSettings_Click(object sender, RoutedEventArgs e) => OpenShell(SettingsLoader.BaseDirectory);
+    private void OpenSettings_Click(object sender, RoutedEventArgs e) => App.OpenShell(SettingsLoader.BaseDirectory);
 
-    private void OpenLog_Click(object sender, RoutedEventArgs e) => OpenShell(Log.FilePath);
+    private void OpenLog_Click(object sender, RoutedEventArgs e) => App.OpenShell(Log.FilePath);
 
-    private void Exit_Click(object sender, RoutedEventArgs e) => Close();
+    private void Exit_Click(object sender, RoutedEventArgs e) => App.Current.ExitApp();
+
+    private void DesktopMode_Click(object sender, RoutedEventArgs e) => ToggleDesktopMode();
+
+    private void HideToTray_Click(object sender, RoutedEventArgs e) => App.Current.HideDashboard();
+
+    private void LockWithStandby_Click(object sender, RoutedEventArgs e) => App.Current.LockWithStandby();
 
     private void Autostart_Click(object sender, RoutedEventArgs e)
     {
@@ -230,24 +312,15 @@ public partial class MainWindow : Window
     }
 
     /// <summary>Menü her açıldığında gerçek durumu göster (Görev Yöneticisi'nden de kapatılmış olabilir).</summary>
-    private void ContextMenu_Opened(object sender, RoutedEventArgs e) => AutostartItem.IsChecked = Autostart.IsEnabled();
-
-    private static void OpenShell(string target)
+    private void ContextMenu_Opened(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"Açılamadı: {target}", ex);
-        }
+        AutostartItem.IsChecked = Autostart.IsEnabled();
+        DesktopModeItem.IsChecked = App.Current.IsDesktopMode;
     }
 
     private void OnClosed(object? sender, EventArgs e)
     {
         SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
-        SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
         _wallpaper.Dispose();
         DisposeWidgets();
     }

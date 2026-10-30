@@ -16,10 +16,10 @@
     .NET çalışma zamanını gömme (MSI küçülür; hedef bilgisayarda .NET 8 Desktop Runtime gerekir).
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File .\build-installer.ps1 -Version 1.1.0
+    powershell -ExecutionPolicy Bypass -File .\build-installer.ps1 -Version 1.4.0
 #>
 param(
-    [string]$Version = '1.1.0',
+    [string]$Version = '1.4.0',
     [switch]$FrameworkDependent
 )
 

@@ -20,6 +20,8 @@ public sealed partial class WeatherViewModel : WidgetViewModel
     [ObservableProperty] private string _temperature = "—";
     [ObservableProperty] private string _description = "Yükleniyor…";
     [ObservableProperty] private string _highLow = "";
+    [ObservableProperty] private string _highLowShort = "";
+    [ObservableProperty] private string _condition = "";
     [ObservableProperty] private string _humidityWind = "";
     [ObservableProperty] private string _precipitation = "";
     [ObservableProperty] private string _status = "Open-Meteo";
@@ -84,6 +86,7 @@ public sealed partial class WeatherViewModel : WidgetViewModel
 
         Temperature = $"{Math.Round(temp)}°";
         Description = $"{WeatherCodes.Describe(code)} · Hissedilen {Math.Round(feels)}°";
+        Condition = WeatherCodes.Describe(code);
         HumidityWind = $"Nem %{Math.Round(humidity)} · Rüzgâr {Math.Round(wind)} km/s";
         Icon = ResourceGeometry(WeatherCodes.IconKey(code, isDay));
 
@@ -97,6 +100,7 @@ public sealed partial class WeatherViewModel : WidgetViewModel
         if (times.GetArrayLength() > 0)
         {
             HighLow = $"En yüksek {Math.Round(maxes[0].GetDouble())}° · En düşük {Math.Round(mins[0].GetDouble())}°";
+            HighLowShort = $"↑ {Math.Round(maxes[0].GetDouble())}°   ↓ {Math.Round(mins[0].GetDouble())}°";
             Precipitation = precip[0].ValueKind == JsonValueKind.Number
                 ? $"Yağış ihtimali %{Math.Round(precip[0].GetDouble())}"
                 : "";

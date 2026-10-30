@@ -29,6 +29,15 @@ public sealed class AppState
     /// <summary>Uygulama başlatıcısındaki uygulamalar (null: henüz değiştirilmedi, ayarlardaki varsayılanlar kullanılır).</summary>
     public List<AppEntry>? Apps { get; set; }
 
+    /// <summary>Masaüstü panelinde Düzenle ile ayarlanan kart yerleşimi (null: ayarlardaki varsayılan).</summary>
+    public List<WidgetPlacement>? DesktopLayout { get; set; }
+
+    /// <summary>"Masaüstüne göm" açık mı (pencere gizli, kartlar masaüstünde).</summary>
+    public bool DesktopMode { get; set; }
+
+    /// <summary>"Arka planda çalışıyor" bildirimi bir kez gösterildi mi.</summary>
+    public bool TrayHintShown { get; set; }
+
     /// <summary>Gece Işığı kaydının, uygulama ilk kez değiştirmeden önceki hali (Base64).</summary>
     public string? NightLightBackup { get; set; }
 

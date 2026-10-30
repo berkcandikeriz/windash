@@ -49,6 +49,16 @@ public partial class WindowBarWidget : UserControl
             ? "Tam ekrandan çık (F11)"
             : "Tam ekran · görev çubuğunu da kaplar (F11)";
 
+        // Dar kartta tam ekran düğmeleri de görünürken yer açmak için başlık yazısını gizle
+        TitlePanel.Visibility = _host.IsFullScreen ? Visibility.Collapsed : Visibility.Visible;
+
+        DesktopModeIcon.Foreground = _host.IsDesktopMode
+            ? (Brush)FindResource("AccentBrush")
+            : (Brush)FindResource("StrongBrush");
+        DesktopModeButton.ToolTip = _host.IsDesktopMode
+            ? "Masaüstüne gömülü · kartlar masaüstünün sağında. Tıkla: gömmeyi kaldır"
+            : "Masaüstüne göm · pencere gizlenir, kartlar masaüstünün sağında cam görünümle durur";
+
         Cursor = _host.IsWindowed ? Cursors.SizeAll : null;
         ToolTip = _host.IsWindowed ? "Taşımak için sürükle · büyütmek için çift tıkla" : null;
     }
@@ -73,4 +83,6 @@ public partial class WindowBarWidget : UserControl
     private void Maximize_Click(object sender, RoutedEventArgs e) => _host?.ToggleMaximize();
     private void FullScreen_Click(object sender, RoutedEventArgs e) => _host?.ToggleFullScreen();
     private void Close_Click(object sender, RoutedEventArgs e) => _host?.CloseWindow();
+    private void DesktopMode_Click(object sender, RoutedEventArgs e) => _host?.ToggleDesktopMode();
+    private void Edit_Click(object sender, RoutedEventArgs e) => _host?.EditLayout();
 }

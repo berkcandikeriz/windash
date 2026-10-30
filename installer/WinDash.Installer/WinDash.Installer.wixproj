@@ -7,7 +7,7 @@
   <PropertyGroup>
     <OutputName>WinDash-Setup</OutputName>
     <InstallerPlatform>x64</InstallerPlatform>
-    <Version Condition="'$(Version)' == ''">1.1.0</Version>
+    <Version Condition="'$(Version)' == ''">1.4.0</Version>
     <!-- dotnet publish çıktısının bulunduğu klasör (sonunda \ olmalı) -->
     <AppPublishDir Condition="'$(AppPublishDir)' == ''">$(MSBuildThisFileDirectory)..\..\artifacts\publish\</AppPublishDir>
     <DefineConstants>Version=$(Version);AppPublishDir=$(AppPublishDir);IconFile=$(MSBuildThisFileDirectory)..\..\src\PcDashboard\Assets\WinDash.ico</DefineConstants>

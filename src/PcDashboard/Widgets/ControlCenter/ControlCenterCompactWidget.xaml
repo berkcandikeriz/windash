@@ -1,0 +1,103 @@
+<UserControl x:Class="PcDashboard.Widgets.ControlCenter.ControlCenterCompactWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:PcDashboard.Controls">
+    <UserControl.Resources>
+        <!-- Açık / kapalı daire: açıkken vurgu rengi + koyu ikon -->
+        <Style x:Key="ToggleCircle" TargetType="Border">
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="{StaticResource IconOffBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ToggleIcon" TargetType="ui:Icon" BasedOn="{StaticResource {x:Type ui:Icon}}">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="StrokeThickness" Value="1.9"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource OnAccentBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="ui:PillSlider" BasedOn="{StaticResource {x:Type ui:PillSlider}}">
+            <Setter Property="Height" Value="40"/>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Masaüstü paneli için sade kontrol merkezi: ağ · Bluetooth / Gece Işığı · parlaklık · ses -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Ağ -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ui:Icon Data="{Binding Network.Icon}" Width="26" Height="26" Foreground="{DynamicResource AccentBrush}"
+                     VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Network.Title}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="{Binding Network.Details}" FontSize="12" Foreground="{StaticResource MutedBrush}"
+                           Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="{Binding Network.Latency}" FontFamily="{StaticResource MonoFont}" FontSize="12"
+                       Foreground="{StaticResource StrongBrush}" VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- Bluetooth ve Gece Işığı -->
+        <UniformGrid Grid.Row="1" Columns="2" Margin="-5,14,-5,12" VerticalAlignment="Center">
+            <Button Style="{StaticResource TileButton}" Margin="5,0" Command="{Binding ToggleBluetoothCommand}"
+                    ToolTip="{Binding BluetoothTooltip}">
+                <StackPanel>
+                    <Border Style="{StaticResource ToggleCircle}" Tag="{Binding BluetoothOn}">
+                        <ui:Icon Data="{StaticResource IconBluetooth}" Style="{StaticResource ToggleIcon}" Tag="{Binding BluetoothOn}"/>
+                    </Border>
+                    <TextBlock Text="Bluetooth" FontSize="13" FontWeight="SemiBold" Margin="0,8,0,0"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding BluetoothText}" FontSize="11" Foreground="{StaticResource MutedBrush}"
+                               Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </Button>
+
+            <Button Style="{StaticResource TileButton}" Margin="5,0" Command="{Binding ToggleNightLightCommand}"
+                    ToolTip="Tıkla: aç / kapat · Sağ tık: Gece ışığı ayarları">
+                <Button.InputBindings>
+                    <MouseBinding MouseAction="RightClick" Command="{Binding OpenNightLightSettingsCommand}"/>
+                </Button.InputBindings>
+                <StackPanel>
+                    <Border Style="{StaticResource ToggleCircle}" Tag="{Binding NightLightOn}">
+                        <ui:Icon Data="{StaticResource IconNightLight}" Style="{StaticResource ToggleIcon}" Tag="{Binding NightLightOn}"/>
+                    </Border>
+                    <TextBlock Text="Gece Işığı" FontSize="13" FontWeight="SemiBold" Margin="0,8,0,0"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding NightLightText}" FontSize="11" Foreground="{StaticResource MutedBrush}"
+                               Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </Button>
+        </UniformGrid>
+
+        <ui:PillSlider Grid.Row="2" Icon="{StaticResource IconBrightness}" Text="{Binding BrightnessText}"
+                       Value="{Binding Brightness, Mode=TwoWay}" IsEnabled="{Binding BrightnessSupported}"
+                       ToolTip="Ekran parlaklığı (DDC/CI) · fare tekerleği ile de ayarlanır"/>
+
+        <ui:PillSlider Grid.Row="3" Margin="0,10,0,0" Icon="{Binding VolumeIcon}" Text="{Binding VolumeText}"
+                       Value="{Binding Volume, Mode=TwoWay}" IsEnabled="{Binding VolumeAvailable}"
+                       IconCommand="{Binding ToggleMuteCommand}"
+                       ToolTip="Ses seviyesi · ikona tıkla: sessize al"/>
+    </Grid>
+</UserControl>

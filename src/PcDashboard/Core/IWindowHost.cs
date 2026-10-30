@@ -7,13 +7,22 @@ public interface IWindowHost
     bool IsMaximized { get; }
     bool IsWindowed { get; }
 
-    /// <summary>Pencere modu değişince.</summary>
+    /// <summary>"Masaüstüne göm" açık mı.</summary>
+    bool IsDesktopMode { get; }
+
+    /// <summary>Pencere modu veya masaüstüne gömme değişince.</summary>
     event EventHandler? DisplayModeChanged;
 
     void MinimizeWindow();
     void ToggleMaximize();
     void ToggleFullScreen();
     void CloseWindow();
+
+    /// <summary>Düzenle: kartları taşı ve boyutlandır.</summary>
+    void EditLayout();
+
+    /// <summary>Masaüstüne göm: pencere gizlenir, kartlar masaüstünün sağına yerleşir.</summary>
+    void ToggleDesktopMode();
 
     /// <summary>Pencere modunda kartı tutup sürükleyerek taşımak için.</summary>
     void BeginDrag();

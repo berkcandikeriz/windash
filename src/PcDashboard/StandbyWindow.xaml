@@ -1,0 +1,34 @@
+<Window x:Class="PcDashboard.StandbyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinDash bekleme ekranı"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        WindowStartupLocation="Manual"
+        Left="0" Top="0" Width="1920" Height="1080"
+        Background="Black"
+        Cursor="None"
+        FontFamily="{StaticResource UiFont}"
+        Foreground="{StaticResource TextBrush}"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Grayscale">
+
+    <!--
+        Bekleme ekranı (ekran koruyucu): ana ekranda tam WinDash paneli, diğer ekranlar siyah.
+        Fare / klavye kullanılınca kapanır ve (ayara göre) Windows'u kilitler.
+        Kartlar yalnızca gösterim içindir; tıklanamaz.
+    -->
+    <Grid x:Name="Root" IsHitTestVisible="False">
+        <Image x:Name="WallpaperImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+        <Rectangle x:Name="DimLayer" Fill="#060810" Opacity="0.22"/>
+        <Viewbox Stretch="Uniform">
+            <Grid x:Name="DesignRoot" Width="1920" Height="1080">
+                <Image x:Name="BackdropImage" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <Grid x:Name="WidgetGrid" Margin="22"/>
+            </Grid>
+        </Viewbox>
+    </Grid>
+</Window>

@@ -26,8 +26,12 @@
             <MenuItem Header="Ayar klasörünü aç" Click="OpenSettings_Click"/>
             <MenuItem Header="Günlüğü aç" Click="OpenLog_Click"/>
             <Separator/>
+            <MenuItem Header="Düzenle (kartları taşı / boyutlandır)" Click="Edit_Click"/>
+            <MenuItem x:Name="DesktopModeItem" Header="Masaüstüne göm" IsCheckable="False" Click="DesktopMode_Click"/>
+            <MenuItem Header="WinDash ile kilitle" Click="LockWithStandby_Click"/>
             <MenuItem x:Name="AutostartItem" Header="Windows ile başlat" IsCheckable="False" Click="Autostart_Click"/>
             <Separator/>
+            <MenuItem Header="Gizle (arka planda çalışır)" Click="HideToTray_Click"/>
             <MenuItem Header="Çıkış (Ctrl+Q)" Click="Exit_Click"/>
         </ContextMenu>
     </Window.ContextMenu>

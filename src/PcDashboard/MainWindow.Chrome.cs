@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Interop;
 using PcDashboard.Core;
 using PcDashboard.Interop;
 using PcDashboard.Services;
@@ -6,7 +7,8 @@ using PcDashboard.Services;
 namespace PcDashboard;
 
 /// <summary>
-/// Pencere modları (düğmeleri Cihazlar kartının üstündeki "Pencere" kartındadır):
+/// Pencere modları (düğmeleri Cihazlar kartının üstündeki "Pencere" kartındadır).
+/// Küçült ve Kapat pencereyi gizler; WinDash bildirim alanında (tepsi) çalışmaya devam eder.
 ///  - Tam ekran: monitörün tamamı (görev çubuğu dahil). Kartta Masaüstü / Başlat / Ara da görünür.
 ///  - Büyütülmüş: monitörün görev çubuğu hariç alanı.
 ///  - Pencere: taşınabilir (kartı sürükle) ve kenarlardan yeniden boyutlandırılabilir; içerik oranını koruyarak ölçeklenir.
@@ -43,6 +45,48 @@ public partial class MainWindow : IWindowHost
 
         StateChanged += OnWindowStateChanged;
         Closing += (_, _) => SaveWindowedBounds();
+        SourceInitialized += (_, _) => HwndSource.FromHwnd(new WindowInteropHelper(this).Handle)?.AddHook(ChromeHook);
+        App.Current.DesktopModeChanged += (_, _) => DisplayModeChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Alt+F4 / görev çubuğundaki "Pencereyi kapat" / küçültme komutu: çıkma, tepsiye gizlen.
+    /// (Dışarıdan gelen doğrudan WM_CLOSE, ör. güncelleme kurulumu, uygulamayı gerçekten kapatır.)
+    /// </summary>
+    private IntPtr ChromeHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == NativeMethods.WM_SYSCOMMAND && !App.Current.IsExiting)
+        {
+            var command = (int)(wParam.ToInt64() & 0xFFF0);
+            if (command is NativeMethods.SC_CLOSE or NativeMethods.SC_MINIMIZE)
+            {
+                handled = true;
+                App.Current.HideDashboard();
+            }
+        }
+
+        return IntPtr.Zero;
+    }
+
+    /// <summary>Tepsiden / Başlat menüsünden yeniden açılınca.</summary>
+    public void ShowDashboard()
+    {
+        if (!IsVisible)
+        {
+            ShowActivated = true;
+            Show();
+        }
+
+        if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
+        Activate();
+    }
+
+    /// <summary>Pencereyi gizler (görev çubuğundan da kalkar); kartlar çalışmaya devam eder.</summary>
+    public void HideToTray()
+    {
+        if (!IsVisible) return;
+        SaveWindowedBounds();
+        Hide();
     }
 
     // =====================================================================
@@ -148,6 +192,18 @@ public partial class MainWindow : IWindowHost
     /// <summary>Win+Yukarı gibi kısayollarla Windows'un "büyüt"ü kenarlıksız pencerede görev çubuğunu örter; bizim büyütmemize çevir.</summary>
     private void OnWindowStateChanged(object? sender, EventArgs e)
     {
+        if (WindowState == WindowState.Minimized && !App.Current.IsExiting)
+        {
+            // Başka bir yoldan küçültüldüyse de görev çubuğunda bekleme, tepsiye gizlen
+            Dispatcher.InvokeAsync(() =>
+            {
+                if (WindowState != WindowState.Minimized) return;
+                App.Current.HideDashboard();
+                WindowState = WindowState.Normal;
+            });
+            return;
+        }
+
         if (WindowState != WindowState.Maximized) return;
         WindowState = WindowState.Normal;
         SwitchMode(DisplayMode.Maximized);
@@ -157,7 +213,10 @@ public partial class MainWindow : IWindowHost
     // IWindowHost (Pencere kartı çağırır)
     // =====================================================================
 
-    public void MinimizeWindow() => WindowState = WindowState.Minimized;
+    public bool IsDesktopMode => App.Current.IsDesktopMode;
+
+    /// <summary>Küçült: pencere gizlenir, WinDash tepside çalışır.</summary>
+    public void MinimizeWindow() => App.Current.HideDashboard();
 
     public void ToggleMaximize() =>
         SwitchMode(_mode == DisplayMode.Maximized ? DisplayMode.Windowed : DisplayMode.Maximized);
@@ -167,7 +226,12 @@ public partial class MainWindow : IWindowHost
             ? (_modeBeforeFullScreen == DisplayMode.FullScreen ? DisplayMode.Windowed : _modeBeforeFullScreen)
             : DisplayMode.FullScreen);
 
-    public void CloseWindow() => Close();
+    /// <summary>Kapat: pencere gizlenir, WinDash tepside çalışır (çıkmak için tepsi menüsü > Çıkış veya Ctrl+Q).</summary>
+    public void CloseWindow() => App.Current.HideDashboard();
+
+    public void EditLayout() => BeginEdit();
+
+    public void ToggleDesktopMode() => App.Current.SetDesktopMode(!App.Current.IsDesktopMode);
 
     public void BeginDrag()
     {

@@ -16,7 +16,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- exe'nin, görev çubuğunun ve Başlat menüsünün ikonu -->
     <ApplicationIcon>Assets\WinDash.ico</ApplicationIcon>
-    <Version>1.1.0</Version>
+    <Version>1.4.0</Version>
     <Product>WinDash</Product>
     <AssemblyTitle>WinDash</AssemblyTitle>
     <Company>WinDash</Company>

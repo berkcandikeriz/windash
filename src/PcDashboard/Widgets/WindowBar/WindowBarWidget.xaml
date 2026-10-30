@@ -15,8 +15,9 @@
 
     <!--
         Pencere kartı (Cihazlar'ın üstünde):
-        [Masaüstü][Başlat][Ara] | (ikon) WinDash ........ [Küçült][Büyüt][Tam ekran][Kapat]
+        [Masaüstü][Başlat][Ara] | (ikon) WinDash ...... [Düzenle][Masaüstüne göm][Küçült][Büyüt][Tam ekran][Kapat]
         Soldaki üç düğme yalnızca tam ekranda görünür (görev çubuğu örtülüyken ona erişmek için).
+        Küçült ve Kapat pencereyi gizler; WinDash bildirim alanında çalışmaya devam eder.
     -->
     <Grid VerticalAlignment="Center">
         <Grid.ColumnDefinitions>
@@ -41,16 +42,23 @@
             <Border Width="1" Height="20" Margin="8,0" Background="{StaticResource TrackBrush}"/>
         </StackPanel>
 
-        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,8,0"
+        <StackPanel x:Name="TitlePanel" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,8,0"
                     IsHitTestVisible="False">
             <Image Source="/Assets/WinDash.ico" Width="20" Height="20" RenderOptions.BitmapScalingMode="HighQuality"/>
-            <TextBlock Text="WinDash" FontSize="15" FontWeight="SemiBold" Margin="8,0,0,0"
+            <TextBlock x:Name="TitleText" Text="WinDash" FontSize="15" FontWeight="SemiBold" Margin="8,0,0,0"
                        Foreground="{StaticResource StrongBrush}" VerticalAlignment="Center"/>
         </StackPanel>
 
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+            <Button Style="{StaticResource ChromeButton}" Click="Edit_Click"
+                    ToolTip="Düzenle · kartları sürükleyerek taşı, sağ alt köşeden boyutlandır">
+                <ui:Icon Data="{StaticResource IconEdit}"/>
+            </Button>
+            <Button x:Name="DesktopModeButton" Style="{StaticResource ChromeButton}" Click="DesktopMode_Click">
+                <ui:Icon x:Name="DesktopModeIcon" Data="{StaticResource IconDock}"/>
+            </Button>
             <Button Style="{StaticResource ChromeButton}" Click="Minimize_Click"
-                    ToolTip="Küçült · görev çubuğuna indirir">
+                    ToolTip="Küçült · pencere gizlenir, WinDash bildirim alanında çalışmaya devam eder">
                 <ui:Icon Data="{StaticResource IconMinimize}"/>
             </Button>
             <Button x:Name="MaximizeButton" Style="{StaticResource ChromeButton}" Click="Maximize_Click">
@@ -60,7 +68,7 @@
                 <ui:Icon x:Name="FullScreenIcon" Data="{StaticResource IconFullscreen}"/>
             </Button>
             <Button Style="{StaticResource ChromeCloseButton}" Click="Close_Click"
-                    ToolTip="WinDash'i kapat (Ctrl+Q)">
+                    ToolTip="Kapat · arka planda çalışmaya devam eder. Tamamen çıkmak için Ctrl+Q veya bildirim alanındaki simge > Çıkış">
                 <ui:Icon Data="{StaticResource IconClose}"/>
             </Button>
         </StackPanel>

@@ -13,12 +13,36 @@ namespace PcDashboard.Widgets.Devices;
 
 public partial class DevicesWidget : UserControl
 {
+    private readonly DeviceRowActions _actions;
+
+    public DevicesWidget()
+    {
+        InitializeComponent();
+        _actions = new DeviceRowActions(this);
+    }
+
+    private void Row_Click(object sender, RoutedEventArgs e) => _actions.OpenPicker(sender);
+
+    private void Row_RightClick(object sender, MouseButtonEventArgs e) => _actions.ShowDiagnosticsMenu(sender, e);
+}
+
+/// <summary>
+/// Cihazlar kartı satırlarının ortak davranışı (ana paneldeki ve masaüstündeki görünüm aynı işlevleri kullanır):
+/// satıra tık → aygıt seçimi açılır penceresi, sağ tık → HID tanılaması.
+/// </summary>
+internal sealed class DeviceRowActions
+{
+    private readonly FrameworkElement _owner;
     private Popup? _popup;
 
-    public DevicesWidget() => InitializeComponent();
+    public DeviceRowActions(FrameworkElement owner) => _owner = owner;
+
+    private object FindResource(object key) => _owner.FindResource(key);
+
+    private object? DataContext => _owner.DataContext;
 
     /// <summary>Satıra tıklanınca o yuvanın aygıt listesini cam görünümlü bir açılır pencerede gösterir.</summary>
-    private void Row_Click(object sender, RoutedEventArgs e)
+    public void OpenPicker(object sender)
     {
         if (sender is not FrameworkElement row || row.DataContext is not DeviceSlotViewModel slot) return;
         if (DataContext is not DevicesViewModel vm) return;
@@ -97,7 +121,7 @@ public partial class DevicesWidget : UserControl
     }
 
     /// <summary>Sağ tık: klavye / mouse satırında Keychron tanılaması.</summary>
-    private void Row_RightClick(object sender, MouseButtonEventArgs e)
+    public void ShowDiagnosticsMenu(object sender, MouseButtonEventArgs e)
     {
         if (sender is not FrameworkElement row || row.DataContext is not DeviceSlotViewModel slot || !slot.IsHid) return;
         e.Handled = true;

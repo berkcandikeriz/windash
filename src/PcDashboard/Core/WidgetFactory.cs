@@ -18,6 +18,7 @@ public sealed record WidgetInstance(FrameworkElement View, WidgetViewModel ViewM
 /// <summary>
 /// layout.json'daki "Type" değerini widget'a çevirir. Yeni widget eklemek için buraya bir satır ekle.
 /// İç boşluklar taslaktaki CSS padding değerleridir (+1px kenarlık).
+/// "Variant": "compact" → sade görünüm (masaüstü paneli için; system'de 2x2 ızgara).
 /// </summary>
 public static class WidgetFactory
 {
@@ -31,14 +32,24 @@ public static class WidgetFactory
         return p.Type.Trim().ToLowerInvariant() switch
         {
             "window" => new(new WindowBarWidget(), new WindowBarViewModel(), Pad(12, 16)),
-            "clock" => new(new ClockWidget(), new ClockViewModel(s), Pad(28, 32)),
-            "weather" => new(new WeatherWidget(), new WeatherViewModel(s.Weather, s.Clock), Pad(28, 32)),
+            "clock" => compact
+                ? new WidgetInstance(new ClockCompactWidget(), new ClockViewModel(s), Pad(20, 24))
+                : new WidgetInstance(new ClockWidget(), new ClockViewModel(s), Pad(28, 32)),
+            "weather" => compact
+                ? new WidgetInstance(new WeatherCompactWidget(), new WeatherViewModel(s.Weather, s.Clock), Pad(20, 24))
+                : new WidgetInstance(new WeatherWidget(), new WeatherViewModel(s.Weather, s.Clock), Pad(28, 32)),
             "apps" => new(new AppsWidget(), new AppsViewModel(s.Apps), Pad(24, 32)),
             "calendar" => new(new AgendaWidget(), new AgendaViewModel(s.Calendar), Pad(24, 32)),
-            "media" => new(new NowPlayingWidget(), new NowPlayingViewModel(s.Media), Pad(28, 32)),
+            "media" => compact
+                ? new WidgetInstance(new NowPlayingCompactWidget(), new NowPlayingViewModel(s.Media), Pad(20, 20))
+                : new WidgetInstance(new NowPlayingWidget(), new NowPlayingViewModel(s.Media), Pad(28, 32)),
             "news" => new(new NewsWidget(), new NewsViewModel(s.News), Pad(28, 32)),
-            "devices" => new(new DevicesWidget(), new DevicesViewModel(s.Devices), Pad(28, 28)),
-            "controls" => new(new ControlCenterWidget(), new ControlCenterViewModel(s), Pad(22, 24)),
+            "devices" => compact
+                ? new WidgetInstance(new DevicesCompactWidget(), new DevicesViewModel(s.Devices), Pad(18, 20))
+                : new WidgetInstance(new DevicesWidget(), new DevicesViewModel(s.Devices), Pad(28, 28)),
+            "controls" => compact
+                ? new WidgetInstance(new ControlCenterCompactWidget(), new ControlCenterViewModel(s), Pad(18, 20))
+                : new WidgetInstance(new ControlCenterWidget(), new ControlCenterViewModel(s), Pad(22, 24)),
             "network" => new(new NetworkWidget(), new NetworkViewModel(s.Network), Pad(20, 28)),
             "system" => new(new SystemInfoWidget(), new SystemInfoViewModel(s.SystemMonitor, compact),
                 compact ? Pad(20, 28) : Pad(24, 28)),

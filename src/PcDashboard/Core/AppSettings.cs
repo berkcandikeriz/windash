@@ -20,6 +20,71 @@ public sealed class AppSettings
     public NetworkSettings Network { get; set; } = new();
     public SystemMonitorSettings SystemMonitor { get; set; } = new();
     public AppsSettings Apps { get; set; } = new();
+    public DesktopSettings Desktop { get; set; } = new();
+    public StandbySettings Standby { get; set; } = new();
+}
+
+/// <summary>
+/// Bekleme ekranı (ekran koruyucu) ve kilitleme. Windows'un kilit / parola ekranının içine uygulamalar çizemez;
+/// bu yüzden WinDash kilitlemeden önce kendi tam ekran görünümünü gösterir, dokunulunca Windows'u kilitler.
+/// </summary>
+public sealed class StandbySettings
+{
+    /// <summary>
+    /// Bu kadar dakika fare / klavye kullanılmazsa bekleme ekranı açılır (ekran koruyucu gibi) ve çıkışta
+    /// <see cref="LockOnResume"/>'a göre kilitlenir. 0: kapalı (varsayılan; boşta WinDash açılmaz, kilitlenmez).
+    /// </summary>
+    public int IdleMinutes { get; set; }
+
+    /// <summary>Bekleme ekranından çıkarken Windows kilitlensin (parola / Oturum aç ekranı gelsin).</summary>
+    public bool LockOnResume { get; set; } = true;
+
+    /// <summary>Bekleme ekranını hemen açıp kilitleyen genel kısayol ("WinDash ile kilitle"). Boş: yok.</summary>
+    public string LockHotkey { get; set; } = "Win+Shift+L";
+
+    /// <summary>Oturum açılınca / kilit açılınca WinDash masaüstüne gömülü moda geçsin.</summary>
+    public bool DesktopModeAfterSignIn { get; set; } = true;
+}
+
+/// <summary>
+/// "Masaüstüne göm" modu: WinDash penceresi gizlenir, seçilen kartlar masaüstünün sağ kenarında
+/// (pencerelerin arkasında, duvar kâğıdının üzerinde) sade cam kartlar olarak, ekranın tam yüksekliğinde durur.
+/// </summary>
+public sealed class DesktopSettings
+{
+    /// <summary>Panelin duracağı monitör (ör. \\.\DISPLAY1). Boşsa ana ekran.</summary>
+    public string MonitorDeviceName { get; set; } = "";
+
+    /// <summary>Panel genişliği: monitör genişliğinin yüzdesi (çözünürlükten bağımsız). Panel her zaman tam yüksekliktedir.</summary>
+    public double WidthPercent { get; set; } = 20;
+
+    /// <summary>
+    /// Panel ızgarası: sütun sayısı ve bir satırın yüksekliği (tasarım birimi; panel genişliği 400 birimdir).
+    /// Satır sayısı ekran yüksekliğine göre hesaplanır. Kartlar Düzenle modunda taşınıp boyutlandırılabilir.
+    /// </summary>
+    public int Columns { get; set; } = 4;
+    public double RowHeight { get; set; } = 20;
+
+    /// <summary>Kartın altındaki camın bulanıklığı (CSS blur px, 1080 yüksekliğe göre). Renkler değişmez.</summary>
+    public double BlurRadius { get; set; } = 30;
+
+    /// <summary>Kartın camın üstündeki ince rengi (#AARRGGBB). "#00000000": yalnızca bulanık duvar kâğıdı.</summary>
+    public string CardTint { get; set; } = "#1F000000";
+
+    /// <summary>
+    /// Varsayılan: tek sütun; saat · hava durumu · şu an çalıyor · ağ, Bluetooth, parlaklık, ses · cihazlar · sistem.
+    /// Kullanıcı Düzenle modunda değiştirirse yerleşim state.json'a (DesktopLayout) kaydedilir ve bu liste kullanılmaz.
+    /// "compact" sade masaüstü görünümüdür.
+    /// </summary>
+    public List<WidgetPlacement> Widgets { get; set; } = new()
+    {
+        new WidgetPlacement { Type = "clock", Column = 0, Row = 0, ColumnSpan = 4, RowSpan = 8, Variant = "compact" },
+        new WidgetPlacement { Type = "weather", Column = 0, Row = 8, ColumnSpan = 4, RowSpan = 8, Variant = "compact" },
+        new WidgetPlacement { Type = "media", Column = 0, Row = 16, ColumnSpan = 4, RowSpan = 8, Variant = "compact" },
+        new WidgetPlacement { Type = "controls", Column = 0, Row = 24, ColumnSpan = 4, RowSpan = 12, Variant = "compact" },
+        new WidgetPlacement { Type = "devices", Column = 0, Row = 36, ColumnSpan = 4, RowSpan = 10, Variant = "compact" },
+        new WidgetPlacement { Type = "system", Column = 0, Row = 46, ColumnSpan = 4, RowSpan = 6, Variant = "compact" },
+    };
 }
 
 public sealed class DisplaySettings
